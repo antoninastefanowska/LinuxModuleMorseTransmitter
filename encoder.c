@@ -43,7 +43,9 @@ char *dictionary[] = {
     "----*" 
 };
 
-int dot_duration = 500, dash_duration = 1000, pause_duration = 1000;
+int dot_duration[DEVICES] = { [0 ... DEVICES-1] = 500 };
+int dash_duration[DEVICES] = { [0 ... DEVICES-1] = 1000 };
+int pause_duration[DEVICES] = { [0 ... DEVICES-1] = 1000 };
 
 char *encode_char(char c)
 {
@@ -63,18 +65,18 @@ char *encode_char(char c)
         return NULL;
 }
 
-int get_duration(char signal)
+int get_duration(int sub_device, char signal)
 {
     switch (signal)
     {
     case '*':
-        return dot_duration;
+        return dot_duration[sub_device];
         break;
     case '-':
-        return dash_duration;
+        return dash_duration[sub_device];
         break;
     case ' ':
-        return pause_duration;
+        return pause_duration[sub_device];
         break;
     default:
         return 0;
@@ -82,35 +84,35 @@ int get_duration(char signal)
     }
 }
 
-int change_dot_duration(int new_duration)
+int change_dot_duration(int sub_device, int new_duration)
 {
     if (new_duration < 0)
     {
         printk(KERN_ERR "Niepoprawny czas trwania.\n");
         return -EINVAL;
     }
-    dot_duration = new_duration;
+    dot_duration[sub_device] = new_duration;
     return 0;
 }
 
-int change_dash_duration(int new_duration)
+int change_dash_duration(int sub_device, int new_duration)
 {
     if (new_duration < 0)
     {
         printk(KERN_ERR "Niepoprawny czas trwania.\n");
         return -EINVAL;
     }
-    dash_duration = new_duration;
+    dash_duration[sub_device] = new_duration;
     return 0;
 }
 
-int change_pause_duration(int new_duration)
+int change_pause_duration(int sub_device, int new_duration)
 {
     if (new_duration < 0)
     {
         printk(KERN_ERR "Niepoprawny czas trwania.\n");
         return -EINVAL;
     }
-    pause_duration = new_duration;
+    pause_duration[sub_device] = new_duration;
     return 0;
 }

@@ -15,30 +15,43 @@
 
 #include "driver.h"
 
-int usecount;
+int usecount[DEVICES];
 
-int device_unused(void)
+int device_unused(int sub_device)
 {
-    if (usecount == 0)
-	return true;
+    if (usecount[sub_device] == 0)
+	    return true;
     else
-	return false;
+	    return false;
 }
 
 int morse_open(struct inode *inode, struct file *file)
 {
+    int sub_device = MINOR(inode->i_rdev);
+    if (sub_device > 8)
+    {
+        printk(KERN_ERR "Bledny numer urzadzenia.");
+        return -EINVAL;
+    }
+
     MOD_INC_USE_COUNT;
-    if (device_unused() == true && buffer_empty() == true)
-        buffer_create();
-    usecount++;
+    if (device_unused(sub_device) == true && buffer_empty(sub_device) == true)
+        buffer_create(sub_device);
+    usecount[sub_device]++;
     return 0;
 }
 
 void morse_release(struct inode *inode, struct file *file)
 {
     int sub_device = MINOR(inode->i_rdev);
+    if (sub_device > 8)
+    {
+        printk(KERN_ERR "Bledny numer urzadzenia.");
+        return;
+    }
+
     MOD_DEC_USE_COUNT;
-    usecount--;
+    usecount[sub_device]--;
 }
 
 int morse_write(struct inode *inode, struct file *file, const char *pB, int count)
@@ -46,20 +59,25 @@ int morse_write(struct inode *inode, struct file *file, const char *pB, int coun
     int i, sleep_result;
     char c;
     int sub_device = MINOR(inode->i_rdev);
+    if (sub_device > 8)
+    {
+        printk(KERN_ERR "Bledny numer urzadzenia.");
+        return -EINVAL;
+    }
 
     for (i = 0; i < count; i++)
     {
         c = get_user(pB + i);
-        while (buffer_full() == true)
+        while (buffer_full(sub_device) == true)
         {
-            sleep_result = queue_sleep(i);
+            sleep_result = queue_sleep(sub_device, i);
             if (sleep_result != 0)
                 return sleep_result;
         }
-        buffer_write(c);
+        buffer_write(sub_device, c);
 
-        if (!currently_transmitting)
-            start_transmitting_character(0);
+        if (!currently_transmitting[sub_device])
+            start_transmitting_character(sub_device);
     }
     return count;
 }
@@ -70,6 +88,11 @@ int morse_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsign
 
     int command_number = 0xff & cmd;
     int sub_device = MINOR(inode->i_rdev);
+    if (sub_device > 8)
+    {
+        printk(KERN_ERR "Bledny numer urzadzenia.");
+        return -EINVAL;
+    }
 
     if (_IOC_DIR(cmd) != _IOC_NONE)
     {
@@ -97,52 +120,52 @@ int morse_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsign
     switch (command_number)
     {
     case 0:
-        return buffer_size(user_input);
+        return buffer_size(sub_device, user_input);
 
     case 1:
-        put_user(buffersize, (int *)arg);
+        put_user(buffersize[sub_device], (int *)arg);
         return 0;
 
     case 2:
-        return change_dot_duration(user_input);
+        return change_dot_duration(sub_device, user_input);
 
     case 3:
-        put_user(dot_duration, (int *)arg);
+        put_user(dot_duration[sub_device], (int *)arg);
         return 0;
 
     case 4:
-        return change_dash_duration(user_input);
+        return change_dash_duration(sub_device, user_input);
 
     case 5:
-        put_user(dash_duration, (int *)arg);
+        put_user(dash_duration[sub_device], (int *)arg);
         return 0;
 
     case 6:
-        return change_pause_duration(user_input);
+        return change_pause_duration(sub_device, user_input);
 
     case 7:
-        put_user(pause_duration, (int *)arg);
+        put_user(pause_duration[sub_device], (int *)arg);
         return 0;
 
     case 8:
-        return change_position_x(user_input);
+        return change_position_x(sub_device, user_input);
 
     case 9:
-        put_user(position_x, (int *)arg);
+        put_user(position_x[sub_device], (int *)arg);
         return 0;
     
     case 10:
-        return change_position_y(user_input);
+        return change_position_y(sub_device, user_input);
 
     case 11:
-        put_user(position_y, (int *)arg);
+        put_user(position_y[sub_device], (int *)arg);
         return 0;
 
     case 12:
-        return change_color(user_input);
+        return change_color(sub_device, user_input);
     
     case 13:
-        put_user(color_index, (int *)arg);
+        put_user(color_index[sub_device], (int *)arg);
         return 0;
 
     default:
@@ -160,11 +183,14 @@ struct file_operations morse_ops = {
 
 int init_module(void)
 {
-    int result;
+    int result, i;
+
     queue_init();
     timer_init();
+    console_init();
 
-    usecount = 0;
+    for (i = 0; i < DEVICES; i++)
+        usecount[i] = 0;
 
     result = register_chrdev(MORSE_MAJOR, "morse", &morse_ops);
 

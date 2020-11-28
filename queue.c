@@ -1,17 +1,21 @@
 #include <linux/sched.h>
 
+#include "driver.h"
+
 #include "queue.h"
 
-struct wait_queue *queue;
+struct wait_queue *queue[DEVICES];
 
 void queue_init(void)
 {
-    init_waitqueue(&queue);
+    int i;
+    for (i = 0; i < DEVICES; i++)
+        init_waitqueue(&queue[i]);
 }
 
-int queue_sleep(int current_index)
+int queue_sleep(int sub_device, int current_index)
 {
-    interruptible_sleep_on(&queue);
+    interruptible_sleep_on(&queue[sub_device]);
     if (current->signal & ~current->blocked)
     {
         if (current_index == 0)
@@ -22,7 +26,7 @@ int queue_sleep(int current_index)
         return 0;
 }
 
-void queue_wake(void)
+void queue_wake(int sub_device)
 {
-    wake_up(&queue);
+    wake_up(&queue[sub_device]);
 }

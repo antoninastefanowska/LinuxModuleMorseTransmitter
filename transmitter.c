@@ -6,13 +6,12 @@
 #include "console.h"
 #include "queue.h"
 #include "timer.h"
-#include "driver.h"
 
 #include "transmitter.h"
 
-char *current_encoded_char;
-int current_signal_index, current_signal_size;
-int currently_transmitting;
+char *current_encoded_char[DEVICES];
+int current_signal_index[DEVICES], current_signal_size[DEVICES];
+int currently_transmitting[DEVICES];
 
 int word_size(char *word)
 {
@@ -22,53 +21,53 @@ int word_size(char *word)
     return count;
 }
 
-void start_transmitting_character(unsigned long arg)
+void start_transmitting_character(unsigned long sub_device)
 {
-    char c = buffer_read();
-    current_encoded_char = encode_char(c);
-    if (current_encoded_char != NULL)
+    char c = buffer_read(sub_device);
+    current_encoded_char[sub_device] = encode_char(c);
+    if (current_encoded_char[sub_device] != NULL)
     {
-        currently_transmitting = true;
-        current_signal_size = word_size(current_encoded_char);
-        current_signal_index = 0;
-        start_transmitting_signal(0);
+        currently_transmitting[sub_device] = true;
+        current_signal_size[sub_device] = word_size(current_encoded_char[sub_device]);
+        current_signal_index[sub_device] = 0;
+        start_transmitting_signal(sub_device);
     }
     else
-        finish_transmitting_character(0);
+        finish_transmitting_character(sub_device);
 }
 
-void start_transmitting_signal(unsigned long arg)
+void start_transmitting_signal(unsigned long sub_device)
 {
-    char signal = current_encoded_char[current_signal_index];
-    int duration = get_duration(signal);
+    char signal = current_encoded_char[sub_device][current_signal_index[sub_device]];
+    int duration = get_duration(sub_device, signal);
     if (signal != ' ')
-        turn_on();
-    timer_start(finish_transmitting_signal, duration);
+        turn_on(sub_device);
+    timer_start(sub_device, finish_transmitting_signal, duration);
 }
 
-void finish_transmitting_signal(unsigned long arg)
+void finish_transmitting_signal(unsigned long sub_device)
 {
-    char signal = current_encoded_char[current_signal_index];
+    char signal = current_encoded_char[sub_device][current_signal_index[sub_device]];
     if (signal != ' ')
-        turn_off();
+        turn_off(sub_device);
 
-    current_signal_index++;
-    if (current_signal_index < current_signal_size)
-        timer_start(start_transmitting_signal, INTERVAL_DURATION);
+    current_signal_index[sub_device]++;
+    if (current_signal_index[sub_device] < current_signal_size[sub_device])
+        timer_start(sub_device, start_transmitting_signal, INTERVAL_DURATION);
     else
-        timer_start(finish_transmitting_character, INTERVAL_DURATION);
+        timer_start(sub_device, finish_transmitting_character, INTERVAL_DURATION);
 }
 
-void finish_transmitting_character(unsigned long arg)
+void finish_transmitting_character(unsigned long sub_device)
 {
-    buffer_update();
-    queue_wake();
-    if (buffer_empty() == true)
+    buffer_update(sub_device);
+    queue_wake(sub_device);
+    if (buffer_empty(sub_device) == true)
     {
-        currently_transmitting = false;
-        if (device_unused() == true)
-            buffer_free();
+        currently_transmitting[sub_device] = false;
+        if (device_unused(sub_device) == true)
+            buffer_free(sub_device);
     }
     else
-        start_transmitting_character(0);
+        start_transmitting_character(sub_device);
 }

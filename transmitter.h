@@ -1,12 +1,14 @@
 #ifndef TRANSMITTER_H
 #define TRANSMITTER_H
 
-extern int currently_transmitting;
+#include "driver.h"
 
-extern void start_transmitting_character(unsigned long arg);
+extern int currently_transmitting[DEVICES];
 
-void start_transmitting_signal(unsigned long arg);
-void finish_transmitting_signal(unsigned long arg);
-void finish_transmitting_character(unsigned long arg);
+extern void start_transmitting_character(unsigned long sub_device);
+
+void start_transmitting_signal(unsigned long sub_device);
+void finish_transmitting_signal(unsigned long sub_device);
+void finish_transmitting_character(unsigned long sub_device);
 
 #endif

@@ -1,19 +1,21 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
+#include "driver.h"
+
 #define MIN_BUFFERSIZE 0
 #define MAX_BUFFERSIZE 1024
 #define INIT_BUFFERSIZE 8
 
-extern int buffersize;
+extern int buffersize[DEVICES];
 
-extern void buffer_create(void);
-extern int buffer_empty(void);
-extern int buffer_full(void);
-extern char buffer_read(void);
-extern void buffer_write(char c);
-extern void buffer_update(void);
-extern void buffer_free(void);
-extern int buffer_size(int new_buffersize);
+extern void buffer_create(int sub_device);
+extern int buffer_empty(int sub_device);
+extern int buffer_full(int sub_device);
+extern char buffer_read(int sub_device);
+extern void buffer_write(int sub_device, char c);
+extern void buffer_update(int sub_device);
+extern void buffer_free(int sub_device);
+extern int buffer_size(int sub_device, int new_buffersize);
 
 #endif

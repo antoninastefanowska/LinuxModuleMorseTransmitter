@@ -5,80 +5,83 @@
 
 #include "buffer.h"
 
-char *buffer;
-int buffersize = INIT_BUFFERSIZE, buffercount = 0, start, end;
-struct semaphore buffer_sem = MUTEX;
+char *buffer[DEVICES];
+int buffersize[DEVICES] = { [0 ... DEVICES-1] = INIT_BUFFERSIZE };
+int buffercount[DEVICES] = { [0 ... DEVICES-1] = 0 };
+int start[DEVICES], end[DEVICES];
 
-void buffer_create(void)
+struct semaphore buffer_sem[DEVICES] = { [0 ... DEVICES-1] = MUTEX };
+
+void buffer_create(int sub_device)
 {
-    down(&buffer_sem);
-    buffer = kmalloc(buffersize, GFP_KERNEL);
-    start = end = 0;
-    up(&buffer_sem);
+    down(&buffer_sem[sub_device]);
+    buffer[sub_device] = kmalloc(buffersize[sub_device], GFP_KERNEL);
+    start[sub_device] = end[sub_device] = 0;
+    up(&buffer_sem[sub_device]);
 }
 
-int buffer_empty(void)
+int buffer_empty(int sub_device)
 {
-    if (buffercount == 0)
+    if (buffercount[sub_device] == 0)
         return true;
     else
         return false;
 }
 
-int buffer_full(void)
+int buffer_full(int sub_device)
 {
-    if (buffercount == buffersize)
+    if (buffercount[sub_device] == buffersize[sub_device])
         return true;
     else
         return false;
 }
 
-char buffer_read(void)
+char buffer_read(int sub_device)
 {
-    return buffer[start];
+    return buffer[sub_device][start[sub_device]];
 }
 
-void buffer_write(char c)
+void buffer_write(int sub_device, char c)
 {
-    buffer[end] = c;
-    buffercount++;
-    end++;
-    if (end == buffersize)
-        end = 0;
+    buffer[sub_device][end[sub_device]] = c;
+    buffercount[sub_device]++;
+    end[sub_device]++;
+    if (end[sub_device] == buffersize[sub_device])
+        end[sub_device] = 0;
 }
 
-void buffer_update(void)
+void buffer_update(int sub_device)
 {
-    start++;
-    buffercount--;
-    if (start == buffersize)
-        start = 0;
+    start[sub_device]++;
+    buffercount[sub_device]--;
+    if (start[sub_device] == buffersize[sub_device])
+        start[sub_device] = 0;
 }
 
-void buffer_free(void)
+void buffer_free(int sub_device)
 {
-    kfree(buffer);
+    kfree(buffer[sub_device]);
 }
 
-int buffer_size(int new_buffersize)
+int buffer_size(int sub_device, int new_buffersize)
 {
     int i;
     char *new_buffer;
 
-    if (new_buffersize < MIN_BUFFERSIZE || new_buffersize > MAX_BUFFERSIZE || new_buffersize < buffersize)
+    if (new_buffersize < MIN_BUFFERSIZE || new_buffersize > MAX_BUFFERSIZE || new_buffersize < buffersize[sub_device])
     {
         printk(KERN_ERR "Niepoprawny rozmiar bufora.\n");
         return -EINVAL;
     }
 
-    down(&buffer_sem);
+    down(&buffer_sem[sub_device]);
     new_buffer = kmalloc(new_buffersize, GFP_KERNEL);
-    for (i = 0; i < buffercount; i++)
-        new_buffer[i] = buffer[i];
-    kfree(buffer);
-    buffer = new_buffer;
-    buffersize = new_buffersize;
-    up(&buffer_sem);
+    for (i = 0; i < buffercount[sub_device]; i++)
+        new_buffer[i] = buffer[sub_device][i];
+    kfree(buffer[sub_device]);
+    buffer[sub_device] = new_buffer;
+    buffersize[sub_device] = new_buffersize;
+    up(&buffer_sem[sub_device]);
 
     return 0;
 }
