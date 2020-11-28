@@ -75,11 +75,14 @@ int buffer_size(int sub_device, int new_buffersize)
     }
 
     down(&buffer_sem[sub_device]);
-    new_buffer = kmalloc(new_buffersize, GFP_KERNEL);
-    for (i = 0; i < buffercount[sub_device]; i++)
-        new_buffer[i] = buffer[sub_device][i];
-    kfree(buffer[sub_device]);
-    buffer[sub_device] = new_buffer;
+    if (buffercount > 0)
+    {
+        new_buffer = kmalloc(new_buffersize, GFP_KERNEL);
+        for (i = 0; i < buffercount[sub_device]; i++)
+            new_buffer[i] = buffer[sub_device][i];
+        kfree(buffer[sub_device]);
+        buffer[sub_device] = new_buffer;
+    }
     buffersize[sub_device] = new_buffersize;
     up(&buffer_sem[sub_device]);
 
