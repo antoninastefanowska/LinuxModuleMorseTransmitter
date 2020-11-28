@@ -124,6 +124,27 @@ int morse_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsign
         put_user(pause_duration, (int *)arg);
         return 0;
 
+    case 8:
+        return change_position_x(user_input);
+
+    case 9:
+        put_user(position_x, (int *)arg);
+        return 0;
+    
+    case 10:
+        return change_position_y(user_input);
+
+    case 11:
+        put_user(position_y, (int *)arg);
+        return 0;
+
+    case 12:
+        return change_color(user_input);
+    
+    case 13:
+        put_user(color_index, (int *)arg);
+        return 0;
+
     default:
         printk(KERN_ERR "Niepoprawna komenda.\n");
         return -EINVAL;
