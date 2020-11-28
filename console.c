@@ -5,7 +5,7 @@
 
 #define currcons fg_console
 
-int colors[] = { 0x17, 0x27, 0x37, 0x47, 0x57, 0x67, 0x77, 0x87, 0x97, 0xA7, 0xB7, 0xC7, 0xD7, 0xE7, 0xF7 };
+int colors[] = { 0x17, 0x27, 0x37, 0x47, 0x57, 0x67, 0x77 };
 
 int position_x[DEVICES], position_y[DEVICES];
 int color_index[DEVICES];
@@ -79,7 +79,7 @@ int change_position_y(int sub_device, int new_position_y)
 
 int change_color(int sub_device, int new_color_index)
 {
-    if (new_color_index < 0 || new_color_index > 14)
+    if (new_color_index < 0 || new_color_index > MAX_COLOR_INDEX)
     {
         printk(KERN_ERR "Niepoprawna pozycja Y.\n");
         return -EINVAL;

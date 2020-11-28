@@ -49,6 +49,8 @@ void morse_release(struct inode *inode, struct file *file)
         printk(KERN_ERR "Bledny numer urzadzenia.");
         return;
     }
+    if (!currently_transmitting[sub_device])
+        buffer_free(sub_device);
 
     MOD_DEC_USE_COUNT;
     usecount[sub_device]--;

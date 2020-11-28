@@ -18,8 +18,8 @@ compile:
 assemble:
 	ld -m elf_i386 -r -o ${MODULE} ${MODFILES}
 
-clean:
-	rm -fr ${MODULE} ${MODFILES}
-
 ioctl:
 	gcc ${IOCTL} -o ${IOCTL.o}
+
+clean:
+	rm -fr ${MODULE} ${MODFILES} ${IOCTL.o}

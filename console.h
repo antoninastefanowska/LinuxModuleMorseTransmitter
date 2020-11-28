@@ -4,6 +4,7 @@
 #include "driver.h"
 
 #define OFF_COLOR 0x07
+#define MAX_COLOR_INDEX 6
 
 extern int position_x[DEVICES], position_y[DEVICES];
 extern int color_index[DEVICES];
