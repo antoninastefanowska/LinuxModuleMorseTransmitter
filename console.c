@@ -47,7 +47,7 @@ int change_position_x(int sub_device, int new_position_x)
     }
     for (i = 0; i < DEVICES; i++)
     {
-        if (position_x[i] == new_position_x)
+        if (i != sub_device && position_x[i] == new_position_x && position_y[sub_device] == position_y[i])
         {
             printk(KERN_ERR "Zajeta pozycja X.\n");
             return -EINVAL;
@@ -67,7 +67,7 @@ int change_position_y(int sub_device, int new_position_y)
     }
     for (i = 0; i < DEVICES; i++)
     {
-        if (position_y[i] == new_position_y)
+        if (i != sub_device && position_y[i] == new_position_y && position_x[sub_device] == position_x[i])
         {
             printk(KERN_ERR "Zajeta pozycja Y.\n");
             return -EINVAL;
