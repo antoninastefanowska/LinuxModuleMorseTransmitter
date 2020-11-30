@@ -14,8 +14,7 @@ extern int buffer_empty(int sub_device);
 extern int buffer_full(int sub_device);
 extern char buffer_read(int sub_device);
 extern void buffer_write(int sub_device, char c);
-extern void buffer_update(int sub_device);
 extern void buffer_free(int sub_device);
-extern int buffer_size(int sub_device, int new_buffersize);
+extern int buffer_change_size(int sub_device, int new_buffersize);
 
 #endif

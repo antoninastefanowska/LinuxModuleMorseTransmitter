@@ -122,7 +122,7 @@ int morse_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsign
     switch (command_number)
     {
     case 0:
-        return buffer_size(sub_device, user_input);
+        return buffer_change_size(sub_device, user_input);
 
     case 1:
         put_user(buffersize[sub_device], (int *)arg);

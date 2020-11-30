@@ -23,7 +23,8 @@ int word_size(char *word)
 
 void start_transmitting_character(unsigned long sub_device)
 {
-    char c = buffer_read(sub_device);
+    char c = buffer_read(sub_device);  
+    queue_wake(sub_device);
     current_encoded_char[sub_device] = encode_char(c);
     if (current_encoded_char[sub_device] != NULL)
     {
@@ -60,8 +61,6 @@ void finish_transmitting_signal(unsigned long sub_device)
 
 void finish_transmitting_character(unsigned long sub_device)
 {
-    buffer_update(sub_device);
-    queue_wake(sub_device);
     if (buffer_empty(sub_device) == true)
     {
         currently_transmitting[sub_device] = false;

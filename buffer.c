@@ -38,7 +38,12 @@ int buffer_full(int sub_device)
 
 char buffer_read(int sub_device)
 {
-    return buffer[sub_device][start[sub_device]];
+    char c = buffer[sub_device][start[sub_device]];
+    start[sub_device]++;
+    buffercount[sub_device]--;
+    if (start[sub_device] == buffersize[sub_device])
+        start[sub_device] = 0;
+    return c;
 }
 
 void buffer_write(int sub_device, char c)
@@ -50,20 +55,12 @@ void buffer_write(int sub_device, char c)
         end[sub_device] = 0;
 }
 
-void buffer_update(int sub_device)
-{
-    start[sub_device]++;
-    buffercount[sub_device]--;
-    if (start[sub_device] == buffersize[sub_device])
-        start[sub_device] = 0;
-}
-
 void buffer_free(int sub_device)
 {
     kfree(buffer[sub_device]);
 }
 
-int buffer_size(int sub_device, int new_buffersize)
+int buffer_change_size(int sub_device, int new_buffersize)
 {
     int i;
     char *new_buffer;
