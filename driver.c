@@ -87,9 +87,9 @@ int morse_write(struct inode *inode, struct file *file, const char *pB, int coun
 int morse_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
 {
     int i, err, user_input;
-
     int command_number = 0xff & cmd;
     int sub_device = MINOR(inode->i_rdev);
+    
     if (sub_device > 8)
     {
         printk(KERN_ERR "Bledny numer urzadzenia.");

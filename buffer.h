@@ -5,7 +5,7 @@
 
 #define MIN_BUFFERSIZE 0
 #define MAX_BUFFERSIZE 1024
-#define INIT_BUFFERSIZE 8
+#define INIT_BUFFERSIZE 256
 
 extern int buffersize[DEVICES];
 
