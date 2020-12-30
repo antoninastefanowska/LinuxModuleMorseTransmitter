@@ -28,7 +28,7 @@ int device_unused(int sub_device)
 int morse_open(struct inode *inode, struct file *file)
 {
     int sub_device = MINOR(inode->i_rdev);
-    if (sub_device > 8)
+    if (sub_device > DEVICES)
     {
         printk(KERN_ERR "Bledny numer urzadzenia.");
         return -EINVAL;
@@ -44,7 +44,7 @@ int morse_open(struct inode *inode, struct file *file)
 void morse_release(struct inode *inode, struct file *file)
 {
     int sub_device = MINOR(inode->i_rdev);
-    if (sub_device > 8)
+    if (sub_device > DEVICES)
     {
         printk(KERN_ERR "Bledny numer urzadzenia.");
         return;
@@ -61,7 +61,7 @@ int morse_write(struct inode *inode, struct file *file, const char *pB, int coun
     int i, sleep_result;
     char c;
     int sub_device = MINOR(inode->i_rdev);
-    if (sub_device > 8)
+    if (sub_device > DEVICES)
     {
         printk(KERN_ERR "Bledny numer urzadzenia.");
         return -EINVAL;
@@ -86,11 +86,11 @@ int morse_write(struct inode *inode, struct file *file, const char *pB, int coun
 
 int morse_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
 {
-    int i, err, user_input;
+    int err, user_input;
     int command_number = 0xff & cmd;
     int sub_device = MINOR(inode->i_rdev);
     
-    if (sub_device > 8)
+    if (sub_device > DEVICES)
     {
         printk(KERN_ERR "Bledny numer urzadzenia.");
         return -EINVAL;
