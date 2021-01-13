@@ -81,7 +81,7 @@ int change_color(int sub_device, int new_color_index)
 {
     if (new_color_index < 0 || new_color_index > MAX_COLOR_INDEX)
     {
-        printk(KERN_ERR "Niepoprawna pozycja Y.\n");
+        printk(KERN_ERR "Niepoprawny numer koloru.\n");
         return -EINVAL;
     }
     color_index[sub_device] = new_color_index;
